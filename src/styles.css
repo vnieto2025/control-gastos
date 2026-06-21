@@ -477,6 +477,11 @@ main, .dashboard {
   font-size: 13px;
 }
 
+.chartBox {
+  position: relative;
+  height: 240px;
+}
+
 .categoryRow {
   margin-bottom: 10px;
 }

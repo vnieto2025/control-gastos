@@ -1,9 +1,25 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import { Pie, Bar } from 'vue-chartjs';
+import {
+  Chart as ChartJS,
+  ArcElement,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend
+} from 'chart.js';
 import { useExpensesStore } from '../stores/expenses';
 import { useSettingsStore } from '../stores/settings';
 import { currencyFmt, dateKey } from '../utils/format';
 import { getCycleRange, getPreviousCycleRange } from '../utils/payCycle';
+
+ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+
+const CHART_TEXT_COLOR = '#8a9aa5';
+const CHART_GRID_COLOR = '#2c3640';
+const CATEGORY_COLORS = ['#2fb88a', '#3a8fe0', '#e0a23a', '#e0584f', '#9b6fe0', '#4fc3c7', '#8a9aa5'];
 
 const expensesStore = useExpensesStore();
 const settingsStore = useSettingsStore();
@@ -90,6 +106,54 @@ const categoryBreakdown = computed(() => {
     .sort((a, b) => b.amount - a.amount);
 });
 
+const pieChartData = computed(() => ({
+  labels: categoryBreakdown.value.map((c) => c.category),
+  datasets: [
+    {
+      data: categoryBreakdown.value.map((c) => c.amount),
+      backgroundColor: CATEGORY_COLORS
+    }
+  ]
+}));
+
+const pieChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { position: 'bottom', labels: { color: CHART_TEXT_COLOR } },
+    tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${fmt(ctx.parsed)}` } }
+  }
+};
+
+const dailyChartData = computed(() => {
+  const totals = {};
+  for (const e of currentCycleExpenses.value) totals[e.date] = (totals[e.date] || 0) + e.amount;
+
+  const labels = [];
+  const data = [];
+  const cursor = new Date(cycleRange.value.start);
+  while (cursor <= cycleRange.value.end) {
+    labels.push(String(cursor.getDate()));
+    data.push(totals[dateKey(cursor)] || 0);
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return { labels, datasets: [{ label: 'Gasto', data, backgroundColor: '#2fb88a' }] };
+});
+
+const dailyChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: { callbacks: { label: (ctx) => fmt(ctx.parsed.y) } }
+  },
+  scales: {
+    x: { ticks: { color: CHART_TEXT_COLOR }, grid: { color: CHART_GRID_COLOR } },
+    y: { ticks: { color: CHART_TEXT_COLOR }, grid: { color: CHART_GRID_COLOR } }
+  }
+};
+
 async function onQueryRange() {
   if (!rangeFrom.value || !rangeTo.value) return;
   rangeLoading.value = true;
@@ -150,14 +214,16 @@ async function onSaveSettings() {
     <section class="dashboardSection">
       <h2>Por categoría (ciclo actual)</h2>
       <div v-if="categoryBreakdown.length === 0" class="emptyHint">Sin gastos registrados todavía.</div>
-      <div v-for="c in categoryBreakdown" :key="c.category" class="categoryRow">
-        <div class="categoryRowHeader">
-          <span>{{ c.category }}</span>
-          <span>{{ fmt(c.amount) }}</span>
-        </div>
-        <div class="categoryBarTrack">
-          <div class="categoryBarFill" :style="{ width: c.percent + '%' }"></div>
-        </div>
+      <div v-else class="chartBox">
+        <Pie :data="pieChartData" :options="pieChartOptions" />
+      </div>
+    </section>
+
+    <section class="dashboardSection">
+      <h2>Gasto por día (ciclo actual)</h2>
+      <div v-if="currentCycleExpenses.length === 0" class="emptyHint">Sin gastos registrados todavía.</div>
+      <div v-else class="chartBox">
+        <Bar :data="dailyChartData" :options="dailyChartOptions" />
       </div>
     </section>
 
