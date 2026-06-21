@@ -1,0 +1,361 @@
+:root {
+  --bg: #0f1419;
+  --surface: #1a2128;
+  --surface2: #232b33;
+  --accent: #2fb88a;
+  --accent-dark: #1f6f5c;
+  --text: #e8edf0;
+  --text-dim: #8a9aa5;
+  --danger: #e0584f;
+  --border: #2c3640;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  height: 100%;
+  overscroll-behavior-y: contain;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 10px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.navBtn, .menuBtn {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 26px;
+  padding: 4px 14px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.monthTitle {
+  text-align: center;
+  flex: 1;
+}
+
+.monthTitle h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.monthTotal {
+  display: block;
+  font-size: 14px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.menuPanel {
+  position: absolute;
+  right: 8px;
+  top: 56px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.menuPanel button, .importLabel {
+  background: none;
+  border: none;
+  color: var(--text);
+  text-align: left;
+  padding: 12px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.menuPanel button:active, .importLabel:active {
+  background: var(--surface);
+}
+
+.weekHeader {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 12px;
+  padding: 10px 6px 0;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  padding: 8px;
+}
+
+.dayCell {
+  background: var(--surface);
+  border-radius: 10px;
+  min-height: 64px;
+  padding: 6px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  cursor: pointer;
+  border: 1px solid transparent;
+  position: relative;
+}
+
+.dayCell.outside {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.dayCell.today {
+  border-color: var(--accent);
+}
+
+.dayCell .dayNum {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.dayCell.today .dayNum {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.dayCell .dayAmount {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 600;
+  margin-top: 4px;
+  word-break: break-word;
+  text-align: center;
+}
+
+.hidden { display: none !important; }
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: flex-end;
+  z-index: 20;
+}
+
+.modalSheet {
+  background: var(--surface);
+  width: 100%;
+  border-radius: 16px 16px 0 0;
+  padding: 16px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.modalHeader h2 {
+  margin: 0;
+  font-size: 16px;
+  text-transform: capitalize;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.expenseForm {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.expenseForm input[type="number"] {
+  width: 100px;
+  flex: 0 0 100px;
+}
+
+.expenseForm input[type="text"] {
+  flex: 1;
+}
+
+.expenseForm input {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.expenseForm button {
+  background: var(--accent-dark);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0 14px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.dayTotal {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.dayTotal strong {
+  color: var(--accent);
+}
+
+.expenseList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.expenseList li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.expenseList .itemInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.expenseList .itemDesc {
+  font-size: 14px;
+}
+
+.expenseList .itemAmount {
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.expenseList .deleteBtn {
+  background: none;
+  border: none;
+  color: var(--danger);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 8px;
+}
+
+.loginScreen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.loginCard {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 28px 22px;
+  width: 100%;
+  max-width: 340px;
+}
+
+.loginCard h1 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  text-align: center;
+}
+
+.loginCard .loginSubtitle {
+  margin: 0 0 20px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.loginForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.loginForm input {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.loginForm button {
+  background: var(--accent-dark);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+.loginError {
+  color: var(--danger);
+  font-size: 13px;
+  margin: 0;
+  text-align: center;
+}
+
+.toggleAuthMode {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: center;
+  margin-top: 14px;
+  width: 100%;
+}
+
+.logoutBtn {
+  background: none;
+  border: none;
+  color: var(--danger);
+  font-size: 14px;
+  cursor: pointer;
+}
