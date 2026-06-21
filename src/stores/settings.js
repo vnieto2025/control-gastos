@@ -3,8 +3,8 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuthStore } from './auth';
 
-const DEFAULT_SALARY = 3850000;
-const DEFAULT_PAY_DAY = 22;
+const DEFAULT_SALARY = 0;
+const DEFAULT_PAY_DAY = 1;
 
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
