@@ -49,16 +49,7 @@ export const useExpensesStore = defineStore('expenses', {
       const q = query(expensesRef, where('date', '>=', start), where('date', '<=', end), orderBy('date'));
 
       this.unsubscribe = onSnapshot(q, (snapshot) => {
-        this.expenses = snapshot.docs.map((d) => {
-          const data = d.data();
-          return {
-            id: d.id,
-            date: data.date,
-            amount: data.amount,
-            description: data.description,
-            createdAtMs: data.createdAt?.toMillis ? data.createdAt.toMillis() : 0
-          };
-        });
+        this.expenses = snapshot.docs.map(mapExpenseDoc);
       });
     },
     stopWatching() {
@@ -66,14 +57,21 @@ export const useExpensesStore = defineStore('expenses', {
       this.unsubscribe = null;
       this.expenses = [];
     },
-    async addExpense(date, amount, description) {
+    async addExpense(date, amount, description, category) {
       const auth = useAuthStore();
       const expensesRef = collection(db, 'users', auth.user.uid, 'expenses');
-      await addDoc(expensesRef, { date, amount, description, createdAt: serverTimestamp() });
+      await addDoc(expensesRef, { date, amount, description, category, createdAt: serverTimestamp() });
     },
     async deleteExpense(id) {
       const auth = useAuthStore();
       await deleteDoc(doc(db, 'users', auth.user.uid, 'expenses', id));
+    },
+    async queryRange(startKey, endKey) {
+      const auth = useAuthStore();
+      const expensesRef = collection(db, 'users', auth.user.uid, 'expenses');
+      const q = query(expensesRef, where('date', '>=', startKey), where('date', '<=', endKey));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map(mapExpenseDoc);
     },
     async exportAll() {
       const auth = useAuthStore();
@@ -81,7 +79,7 @@ export const useExpensesStore = defineStore('expenses', {
       const snapshot = await getDocs(expensesRef);
       return snapshot.docs.map((d) => {
         const data = d.data();
-        return { date: data.date, amount: data.amount, description: data.description };
+        return { date: data.date, amount: data.amount, description: data.description, category: data.category || 'Otros' };
       });
     },
     async importAll(records) {
@@ -92,9 +90,22 @@ export const useExpensesStore = defineStore('expenses', {
           date: r.date,
           amount: r.amount,
           description: r.description,
+          category: r.category || 'Otros',
           createdAt: serverTimestamp()
         });
       }
     }
   }
 });
+
+function mapExpenseDoc(d) {
+  const data = d.data();
+  return {
+    id: d.id,
+    date: data.date,
+    amount: data.amount,
+    description: data.description,
+    category: data.category || 'Otros',
+    createdAtMs: data.createdAt?.toMillis ? data.createdAt.toMillis() : 0
+  };
+}
